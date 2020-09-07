@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 //Les routes du sites
 //Création de chemins absolus, afin d'accèder à nos ressources...
 //Exemple : http://localhost/jur_zoo/...ressource
@@ -7,7 +9,14 @@ define("URL", str_replace("index.php", "", (isset($_SERVER['HTTPS']) ? "https" :
 
 /*Appel des controllers qu'une seule fois*/
 require_once("controllers/front/API.controller.php");
+require_once("controllers/back/Admin.controller.php");
+require_once("controllers/back/Familles.controller.php");
+require_once("controllers/back/Animaux.controller.php");
+
 $apicontroller = new APIController();
+$admincontroller = new AdminController();
+$famillesController = new FamillesController();
+$animauxController = new AnimauxController();
 
 //Vérification des URLS
 try {
@@ -42,22 +51,91 @@ try {
                     case "familles":
                         $apicontroller->getFamilles();
                         break;
-                    case "sendMessage": $apicontroller->sendMessage();
+                    case "sendMessage":
+                        $apicontroller->sendMessage();
                         break;
                     default :
                         throw  new Exception("La page n'éxiste pas.");
                 }
                 break;
             case "back" :
-                echo "Back...à venir.";
+                switch ($url[1]) {
+                    case "login" :
+                        $admincontroller->getPageLogin();
+                        break;
+                    case "connexion":
+                        $admincontroller->connexion();
+                        break;
+                    case "deconnexion":
+                        $admincontroller->deconnexion();
+                        break;
+                    case "admin":
+                        $admincontroller->getAccueilAdmin();
+                        break;
+                    case "creationdescomptes" :
+                        $admincontroller->getPageCreationCompte();
+                        break;
+                    case "ajouterAdministrateur" :
+                        $admincontroller->ajouterAdministrateur();
+                        break;
+                    case "familles" :
+                        switch ($url[2]) {
+                            case "visualisation" :
+                                $famillesController->visualisation();
+                                break;
+                            case "validationSuppression":
+                                $famillesController->suppression();
+                                break;
+                            case "validationModification":
+                                $famillesController->modification();
+                                break;
+                            case "creation":
+                                $famillesController->creationVue();
+                                break;
+                            case "creationValidation":
+                                $famillesController->creationValidation();
+                                break;
+                            default :
+                                throw  new Exception("La page n'éxiste pas.");
+                        }
+                        break;
+                    case "animaux" :
+                        switch ($url[2]) {
+                            case "visualisation" :
+                                $animauxController->visualisation();
+                                break;
+                            case "validationSuppression" :
+                                $animauxController->validationSuppression();
+                                break;
+                            case "creation" :
+                                $animauxController->creation();
+                                break;
+                            case "creationValidation" :
+                                $animauxController->creationValidation();
+                                break;
+                            case "modification" :
+                                /*http://myzoo.org/zooback/back/animaux/modification/2 $url[3]->2*/
+                                $animauxController->modification($url[3]);
+                                break;
+                            default :
+                                throw  new Exception("La page n'éxiste pas.");
+                        }
+                        break;
+                    default :
+                        throw  new Exception("La page n'éxiste pas.");
+                }
                 break;
             default :
                 throw  new Exception("La page n'éxiste pas.");
         }
     }
-} catch (Exception $e) {
-    $msg = $e->getMessage();
-    echo $msg;
+} catch
+(Exception $e) {
+    /*    $msg = $e->getMessage();
+        echo $msg;
+        echo "<a href='" . URL . "back/login'>Se connecter</a>";*/
+
+    header('Location: ' . URL . '/back/login');
 }
 
 //http://localhost/myzoo/zooback/front/animaux/2/1
